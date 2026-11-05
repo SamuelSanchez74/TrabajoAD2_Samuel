@@ -1,5 +1,7 @@
 package org.educa.service;
 
+import org.educa.dao.BilleteDAO;
+import org.educa.dao.BilleteDAOImpl;
 import org.educa.entity.BilleteEntity;
 
 import java.math.BigDecimal;
@@ -16,6 +18,7 @@ public class BilleteService {
     private static final BigDecimal FACTOR_DESCUENTO_INFANTIL = new BigDecimal("0.80");
     private static final BigDecimal FACTOR_DESCUENTO_RESERVAS = new BigDecimal("0.90");
 
+    private final BilleteDAO billeteDAO = new BilleteDAOImpl();
     private final VueloService vueloService = new VueloService();
 
     /**
@@ -43,6 +46,14 @@ public class BilleteService {
         billete.setPrecio(precio.setScale(2, RoundingMode.HALF_UP));
     }
 
+    /**
+     * Guarda el billete dentro de la transacción en curso
+     *
+     * @param connection la conexión de la transacción
+     * @param billete    el {@link BilleteEntity} a guardar
+     * @throws SQLException error al ejecutar la sentencia SQL
+     */
     public void save(Connection connection, BilleteEntity billete) throws SQLException {
+        billeteDAO.save(connection, billete);
     }
 }
