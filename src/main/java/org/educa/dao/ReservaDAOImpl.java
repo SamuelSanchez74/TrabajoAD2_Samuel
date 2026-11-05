@@ -17,6 +17,12 @@ public class ReservaDAOImpl implements ReservaDAO {
             "SELECT id_reserva, cod_reserva, fec_reserva, estado " +
                     "FROM reservas WHERE id_cliente = ? ORDER BY fec_reserva, id_reserva";
 
+    private static final String SQL_EXISTS_BY_CODIGO =
+            "SELECT 1 FROM reservas WHERE cod_reserva = ?";
+
+    private static final String SQL_INSERT =
+            "INSERT INTO reservas (cod_reserva, id_cliente) VALUES (?, ?) RETURNING id_reserva";
+
     @Override
     public List<ReservaEntity> findByCliente(ClienteEntity cliente) throws SQLException {
         List<ReservaEntity> reservas = new ArrayList<>();
@@ -36,5 +42,27 @@ public class ReservaDAOImpl implements ReservaDAO {
             }
         }
         return reservas;
+    }
+
+    @Override
+    public boolean existsByCodigo(Connection connection, String codReserva) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(SQL_EXISTS_BY_CODIGO)) {
+            ps.setString(1, codReserva);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    @Override
+    public void save(Connection connection, ReservaEntity reserva) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(SQL_INSERT)) {
+            ps.setString(1, reserva.getCodReserva());
+            ps.setInt(2, reserva.getCliente().getIdCliente());
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                reserva.setIdReserva(rs.getInt(1));
+            }
+        }
     }
 }
